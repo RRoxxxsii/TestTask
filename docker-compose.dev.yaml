@@ -1,0 +1,36 @@
+services:
+
+  # BackEnd
+  backend:
+    build:
+      context: .
+      target: dev
+    ports:
+      - '127.0.0.1:8000:8000'
+    env_file:
+      - .env
+    volumes:
+      - .:/proj/
+    restart: always
+    networks:
+      - test_task
+    depends_on:
+      redis:
+        condition: service_healthy
+
+
+  # Redis
+  redis:
+    image: redis:7.0.5-alpine
+    container_name: redis
+    ports:
+      - '127.0.0.1:6379:6379'
+    networks:
+      - test_task
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+
+
+networks:
+  test_task:
+    driver: bridge
